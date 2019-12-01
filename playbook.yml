@@ -1,0 +1,36 @@
+---
+- hosts: all
+  become: yes
+
+  tasks:
+
+          - name: installed system packages
+            apt: name={{ item }} state=latest
+            with_items:
+                    - apt-transport-https
+                    - ca-certificates
+                    - curl
+                    - gnupg-agent
+                    - software-properties-common
+          - name: add Docker GpG
+            apt_key: url=https://download.docker.com/linux/ubuntu/gpg
+
+          - name: add docker repo
+            apt_repository:
+                    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+                    state: present
+
+          - name: install docker
+            apt: name=docker-ce state=latest
+            notify:
+                    - restart docker
+
+          - name: create docker group
+            group: name=docker gid=2002 state=present
+
+          - name: add ubunto to docker group
+            user: name=ubuntu group=docker append=yes
+
+  handlers:
+          - name: restart docker
+            service: name=docker state=restarted
