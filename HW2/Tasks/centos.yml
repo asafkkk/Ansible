@@ -1,0 +1,36 @@
+---
+    - name: remove old docker
+      yum:
+        name:
+              - docker-client
+              - docker-client-latest
+              - docker-common
+              - docker-latest
+              - docker-latest-logrotate
+              - docker-engine
+        state: absent
+
+    - name: Install requirments
+      yum:
+        name:
+         - yum-utils
+         - device-mapper-persistent-data
+         - lvm2
+        state: latest
+
+    - name: Add Docker repo
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docer-ce.repo
+
+    - name: install docker-ce
+      yum: name=docker-ce state=latest
+      notify:
+        - restart docker
+
+
+    - name: Add user to docker group
+      user:
+        name: centos
+        groups: docker
+        append: yes
